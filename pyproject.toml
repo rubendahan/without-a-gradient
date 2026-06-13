@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "metaheuristics-lab"
+version = "0.1.0"
+description = "A clean, unified library of black-box metaheuristic optimizers (PSO, GA, DE, SA, CMA-ES, Bayesian) with standard benchmarks."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "Ruben Dahan" }]
+keywords = [
+    "optimization", "metaheuristics", "particle-swarm", "genetic-algorithm",
+    "differential-evolution", "simulated-annealing", "cma-es",
+    "bayesian-optimization", "black-box-optimization",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Mathematics",
+]
+dependencies = ["numpy>=1.21"]
+
+[project.optional-dependencies]
+dev = ["pytest>=7", "matplotlib>=3.5"]
+
+[project.urls]
+Homepage = "https://github.com/rubendahan/metaheuristics-lab"
+Documentation = "https://github.com/rubendahan/metaheuristics-lab/tree/main/docs"
+
+[tool.setuptools.packages.find]
+include = ["metaheuristics*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

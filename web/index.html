@@ -1,0 +1,529 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Metaheuristics, Explained — PSO, GA, DE, SA & Bayesian Optimization</title>
+  <meta name="description" content="An interactive, visual introduction to the metaheuristics behind black-box optimization: particle swarm, genetic algorithms, differential evolution, simulated annealing, CMA-ES and Bayesian optimization. Live in-browser demos." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%90%9D%3C/text%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="kicker">metaheuristics, explained</div>
+    <h1>How to find a needle<br />in a billion-dimensional haystack.</h1>
+    <p class="sub">
+      When you cannot write down a gradient — when all you can do is <em>try a
+      solution and measure how good it is</em> — you reach for a metaheuristic.
+      This is a visual, hands-on tour of the ones worth knowing, each running
+      live in your browser.
+    </p>
+    <div class="tags">
+      <span class="tag">particle swarm</span>
+      <span class="tag">genetic algorithm</span>
+      <span class="tag">differential evolution</span>
+      <span class="tag">simulated annealing</span>
+      <span class="tag">CMA-ES</span>
+      <span class="tag">bayesian optimization</span>
+    </div>
+  </div>
+</header>
+
+<nav class="toc">
+  <div class="wrap">
+    <a href="#intro">the problem</a>
+    <a href="#pso">particle swarm</a>
+    <a href="#ga">genetic algo</a>
+    <a href="#de">diff. evolution</a>
+    <a href="#sa">annealing</a>
+    <a href="#cmaes">CMA-ES</a>
+    <a href="#bayes">bayesian opt</a>
+    <a href="#compare">which to use</a>
+    <a href="#story">the story</a>
+  </div>
+</nav>
+
+<main class="wrap">
+
+<!-- ============================ INTRO ============================ -->
+<section id="intro">
+  <h2><span class="num">00</span> The black-box problem</h2>
+  <p class="lede">Minimize a function you are not allowed to look inside.</p>
+
+  <p>
+    Formally we want <code>x* = argmin f(x)</code> over some search space. Classical
+    optimization assumes <em>structure</em>: a gradient <code>∇f</code> to follow
+    downhill, convexity to guarantee the bottom is global, an algebraic form to
+    differentiate. Strip all of that away and you are left with the
+    <strong>black box</strong>: you may submit a candidate <code>x</code> and
+    receive a single number <code>f(x)</code>. Nothing else.
+  </p>
+
+  <p>This is the rule, not the exception. The "function" might be:</p>
+  <ul>
+    <li>a <strong>physics simulation</strong> scored by an outcome (our traffic case below);</li>
+    <li>a machine-learning model's validation loss as a function of its hyperparameters;</li>
+    <li>a wind-tunnel test, a chemistry assay, a render farm — anything where the
+      output is real but the math is opaque.</li>
+  </ul>
+
+  <p>
+    Two things make it hard. First, <strong>dimensionality</strong>: the volume
+    of a search space explodes exponentially, so you can never grid it. Second,
+    <strong>multimodality</strong>: the landscape is riddled with local minima —
+    valleys that look like the bottom until you climb out and find a deeper one.
+  </p>
+
+  <div class="callout">
+    <strong>The metaheuristic bargain.</strong> None of these methods guarantee the
+    global optimum (in general, nothing can without exhausting the space). They are
+    <em>heuristics</em>: clever, biologically- or physically-inspired sampling
+    strategies that spend a fixed budget of evaluations to find a <em>very good</em>
+    solution with high probability. The whole game is the tension between
+    <strong>exploration</strong> (cover new ground) and <strong>exploitation</strong>
+    (refine what already looks good). Every algorithm below is a different answer to
+    that one tension.
+  </div>
+
+  <p>
+    Throughout, we visualize on 2-D landscapes you can see — but the same code runs
+    in any dimension. The white crosshair marks the true global optimum; watch how
+    each method hunts for it. <strong>Drag the sliders while it runs.</strong>
+  </p>
+</section>
+
+<!-- ============================ PSO ============================ -->
+<section id="pso">
+  <h2><span class="num">01</span> Particle Swarm Optimization</h2>
+  <p class="lede">A flock of candidates, pulled between memory and consensus.</p>
+
+  <p>
+    PSO (Kennedy &amp; Eberhart, 1995) was inspired by the way a flock of birds or
+    a school of fish finds food: no individual knows where the food is, yet the
+    group converges on it through purely local rules. Each <strong>particle</strong>
+    is a candidate solution flying through the search space with a position and a
+    velocity. Two memories steer it:
+  </p>
+  <ul>
+    <li><strong>p</strong> — its own best position ever (the <em>cognitive</em> pull:
+      "go back to the best I personally found");</li>
+    <li><strong>g</strong> — the best position any particle has found (the
+      <em>social</em> pull: "drift toward what the swarm agrees is good").</li>
+  </ul>
+
+  <p>Every step, each particle updates its velocity then moves:</p>
+  <div class="formula">
+    v ← <span class="hl-i">w·v</span> + <span class="hl-c">c₁·r₁·(p − x)</span> + <span class="hl-s">c₂·r₂·(g − x)</span><br />
+    x ← x + v
+    <div class="small">r₁, r₂ ~ U(0,1) fresh each step &nbsp;·&nbsp; <span class="hl-i">inertia</span> &nbsp; <span class="hl-c">cognitive</span> &nbsp; <span class="hl-s">social</span></div>
+  </div>
+
+  <p>
+    Those three terms <em>are</em> the explore/exploit dial. The
+    <span style="color:var(--accent-5)"><strong>inertia w</strong></span> is
+    momentum: high <code>w</code> keeps particles roaming (exploration), low
+    <code>w</code> lets them settle (exploitation) — which is why a good PSO
+    <em>anneals</em> <code>w</code> from ~0.9 down to ~0.4 over the run. The
+    <span style="color:var(--accent-3)"><strong>cognitive c₁</strong></span> pulls
+    toward personal memory; the
+    <span style="color:var(--accent)"><strong>social c₂</strong></span> toward the
+    group's best. Crank <code>c₂</code> up and the swarm collapses onto the first
+    decent point it finds — fast, but easily a local trap.
+  </p>
+
+  <div class="demo" data-demo="pso"></div>
+
+  <div class="callout good">
+    <strong>Try this.</strong> Set <code>inertia w</code> high (≈1.1) on Rastrigin —
+    the swarm refuses to settle and keeps exploring the ripples. Now drop it to 0.3:
+    it snaps into the nearest basin. Push <code>social c₂</code> to 3 and
+    <code>cognitive c₁</code> to 0 — every particle dives at the global best and
+    diversity dies. The sweet spot is a balance, classically <code>c₁ = c₂ ≈ 2</code>
+    with the constriction factor (here ~1.5 each with clamping).
+  </div>
+
+  <h3>Why it works — and where it breaks</h3>
+  <p>
+    PSO is almost embarrassingly simple to implement, has few parameters, and is
+    strong on multimodal landscapes because the swarm holds many positions at once.
+    Its failure mode is <strong>premature convergence</strong>: once <code>g</code>
+    stops improving, the social pull drags everyone in, the difference terms
+    <code>(p − x)</code> and <code>(g − x)</code> shrink to zero, and the swarm
+    freezes — even if the true optimum is elsewhere. The fixes used in the library:
+    a <strong>ring topology</strong> (particles follow a local neighbour's best, not
+    the global one, so good news spreads slowly and diversity survives), and
+    <strong>turbulent re-initialization</strong> of the worst particles after a
+    stagnation window.
+  </p>
+
+  <pre><span class="c"># the entire update, vectorized over the swarm (metaheuristics/pso.py)</span>
+v = <span class="f">w</span> * v \
+  + <span class="f">c1</span> * r1 * (pbest_x - x) \
+  + <span class="f">c2</span> * r2 * (gbest_x - x)
+v = np.<span class="f">clip</span>(v, -v_max, v_max)
+x = bounds.<span class="f">clip</span>(x + v)</pre>
+</section>
+
+<!-- ============================ GA ============================ -->
+<section id="ga">
+  <h2><span class="num">02</span> Genetic Algorithms</h2>
+  <p class="lede">Darwin as an optimizer: select, recombine, mutate, repeat.</p>
+
+  <p>
+    A genetic algorithm (Holland, 1975) treats candidate solutions as
+    <strong>individuals</strong> in a population and lets natural selection do the
+    searching. Each generation applies three operators that map directly onto
+    biology:
+  </p>
+  <ol>
+    <li><strong>Selection.</strong> Pick parents with a bias toward fitness.
+      <em>Tournament selection</em> grabs <code>k</code> random individuals and keeps
+      the best of them; larger <code>k</code> means harsher selection pressure —
+      faster progress, but a quicker collapse of diversity.</li>
+    <li><strong>Crossover.</strong> Recombine two parents into children, mixing their
+      "genes" (coordinates). The intuition — Holland's <em>building-block
+      hypothesis</em> — is that good partial solutions combine into better whole
+      ones. For real numbers, <em>BLX-α</em> samples each child gene from the
+      interval spanned by the parents, slightly extended so children can step a
+      little beyond either parent.</li>
+    <li><strong>Mutation.</strong> Randomly perturb genes. This is the exploration
+      valve: without it the population converges and can only ever recombine what it
+      already has. We use Gaussian mutation with a step that anneals over time.</li>
+  </ol>
+
+  <p>
+    <strong>Elitism</strong> copies the few best individuals through untouched, so
+    the best-so-far can never be lost to an unlucky mutation. The three operators
+    split the explore/exploit duty cleanly: <em>crossover exploits</em> by blending
+    good blocks, <em>mutation explores</em> by stepping off the population, and
+    <em>selection</em> supplies the pressure that turns random drift into a directed
+    climb.
+  </p>
+
+  <div class="demo" data-demo="ga"></div>
+
+  <div class="callout">
+    <strong>Watch the population breathe.</strong> Early on it is spread across the
+    whole landscape (exploration); generation by generation, selection pulls it
+    toward the good basins and it contracts (exploitation). Turn <code>mutation σ</code>
+    to near zero and the population collapses fast but can get stuck; turn it high and
+    it never commits, scattering forever. Raise <code>tournament k</code> to feel
+    selection pressure: high <code>k</code> converges hard, low <code>k</code> keeps
+    weak individuals around as genetic raw material.
+  </div>
+
+  <h3>GA vs. PSO</h3>
+  <p>
+    They are cousins — both population-based — but differ in <em>how information
+    moves</em>. In PSO, particles keep their identity and are <em>attracted</em>
+    toward good points; in a GA, individuals are <em>replaced</em> by recombinations
+    of good ones. GAs shine when the problem has combinatorial structure or
+    deceptive ruggedness where building blocks matter; PSO often converges faster on
+    smooth-ish continuous problems. On a flat multimodal grid like Rastrigin, a GA's
+    crossover-driven diversity frequently finds the global basin where a greedy swarm
+    settles for second best.
+  </p>
+</section>
+
+<!-- ============================ DE ============================ -->
+<section id="de">
+  <h2><span class="num">03</span> Differential Evolution</h2>
+  <p class="lede">Mutate by the difference between two random members. Self-scaling, almost parameter-free.</p>
+
+  <p>
+    Differential Evolution (Storn &amp; Price, 1997) is the connoisseur's default for
+    continuous black-box problems. Its mutation operator is one elegant idea: to
+    perturb a member, add the <strong>scaled difference of two other random
+    members</strong>. For the classic <code>rand/1/bin</code> scheme, target
+    <code>xᵢ</code> gets a donor
+  </p>
+  <div class="formula">
+    v = x<sub>a</sub> + <span class="hl-i">F</span> · (x<sub>b</sub> − x<sub>c</sub>)
+    <div class="small">a, b, c distinct random members · F ≈ 0.5–0.9</div>
+  </div>
+  <p>
+    then <em>binomial crossover</em> mixes donor and target coordinate-by-coordinate
+    (each from the donor with probability <code>CR</code>, at least one guaranteed),
+    and the trial replaces the target only if it scores at least as well —
+    <strong>greedy selection</strong>.
+  </p>
+
+  <p>
+    The beautiful part is <strong>self-scaling</strong>. Early on the population is
+    spread out, so a difference vector <code>x_b − x_c</code> is large and DE takes
+    big exploratory leaps. As the population converges around the optimum, those
+    differences shrink automatically, and the steps become fine local refinements —
+    <em>no step-size schedule required</em>. The search adapts its own scale to the
+    landscape for free.
+  </p>
+
+  <div class="demo" data-demo="de"></div>
+
+  <div class="callout good">
+    <strong>Feel the self-scaling.</strong> Watch the candidate cloud: it starts
+    coarse and automatically tightens as members agree. <code>F</code> sets step
+    aggressiveness (too low → premature convergence; too high → never settles);
+    <code>CR</code> controls how much of the donor enters each trial — high
+    <code>CR</code> suits separable functions, low <code>CR</code> suits ones with
+    tangled coordinates. On Rosenbrock's curved valley DE is excellent, second only
+    to CMA-ES below.
+  </div>
+</section>
+
+<!-- ============================ SA ============================ -->
+<section id="sa">
+  <h2><span class="num">04</span> Simulated Annealing</h2>
+  <p class="lede">One walker, cooling from chaos into order — and willing to climb uphill to escape a trap.</p>
+
+  <p>
+    Simulated Annealing (Kirkpatrick et al., 1983) borrows from metallurgy: heat a
+    metal and its atoms jiggle freely; cool it slowly and they settle into a
+    low-energy crystal. SA is a single point taking random steps, with one crucial
+    twist — it sometimes accepts a <em>worse</em> move. A proposal that
+    <strong>improves</strong> is always taken; a proposal that <strong>worsens</strong>
+    by <code>Δ</code> is accepted with probability
+  </p>
+  <div class="formula">
+    P(accept) = exp(−Δ / <span class="hl-i">T</span>)
+    <div class="small">T = temperature, lowered on a cooling schedule</div>
+  </div>
+  <p>
+    At high <strong>temperature</strong> almost any move is accepted — the walker
+    roams freely and hops out of local minima. As <code>T</code> cools toward zero,
+    uphill moves become rare and finally forbidden, so the walker settles into
+    whatever basin it is in. The <strong>cooling schedule</strong> is everything:
+    cool too fast and you <em>quench</em> into a bad local minimum; cool too slow and
+    you waste your whole budget. Geometric cooling <code>T ← α·T</code> with
+    <code>α</code> near 1 is the standard compromise.
+  </p>
+
+  <div class="demo" data-demo="sa"></div>
+
+  <div class="callout warn">
+    <strong>The accept-worse magic.</strong> The yellow trail is the walker; red
+    segments are <em>rejected</em> proposals. Early (hot) you'll see it accept moves
+    that go uphill — that's how it escapes the cosine ripples of Rastrigin. With a
+    fast cooling <code>α = 0.90</code> it freezes early, often in a nearby local
+    minimum; with <code>α = 0.999</code> it explores far longer before committing.
+    SA is the cheapest way to get the "escape local minima" behaviour — one point,
+    one evaluation per step, no population to maintain.
+  </div>
+</section>
+
+<!-- ============================ CMA-ES ============================ -->
+<section id="cmaes">
+  <h2><span class="num">05</span> CMA-ES</h2>
+  <p class="lede">Don't move points — move a <em>distribution</em>, and learn the shape of the valley.</p>
+
+  <p>
+    The Covariance Matrix Adaptation Evolution Strategy (Hansen &amp; Ostermeier,
+    2001) is the heavyweight of continuous black-box optimization, and it works at a
+    different level of abstraction than everything above. Instead of pushing
+    individual candidates around, it maintains a <strong>multivariate Gaussian</strong>
+    distribution <code>N(m, σ²C)</code> over the search space and updates that
+    distribution each generation:
+  </p>
+  <ol>
+    <li><strong>Sample</strong> λ candidates from the current Gaussian.</li>
+    <li><strong>Rank</strong> them and keep the best μ.</li>
+    <li><strong>Recombine</strong> — the new mean <code>m</code> is their weighted average.</li>
+    <li><strong>Adapt</strong> the covariance <code>C</code> and step size <code>σ</code>
+      so the Gaussian stretches along the directions that have been producing
+      improvements, and shrinks along the rest.</li>
+  </ol>
+
+  <p>
+    That covariance adaptation is the magic. On an ill-conditioned, curved valley
+    like Rosenbrock — where the productive direction is a thin diagonal ridge —
+    CMA-ES <em>learns the ridge's orientation and scale</em> and reshapes its sampling
+    ellipse to align with it. It effectively recovers second-order (Newton-like)
+    information about the landscape <strong>without ever computing a gradient</strong>.
+    Two evolution paths (the cumulative step directions) decouple the control of the
+    overall step size from the shape, which is what makes it so stable.
+  </p>
+
+  <div class="callout">
+    <strong>The trade-off.</strong> The covariance update is <code>O(d²)</code> per
+    step (an eigendecomposition of a <code>d×d</code> matrix), so CMA-ES is the tool
+    for <em>low-to-medium dimension</em> (roughly <code>d ≤ 100</code>) where sample
+    efficiency matters more than per-step cost. In the benchmark suite it crushes
+    smooth/ill-conditioned problems — Rosenbrock to <code>10⁻²³</code>, far past
+    anything else — but a regular multimodal grid like Rastrigin can still trap its
+    single adapting cloud, where a diverse population wins. No demo here (a drifting,
+    reshaping ellipse in 2-D undersells it), but the full implementation is in
+    <code>metaheuristics/cma_es.py</code>, ~90 readable lines.
+  </div>
+
+  <pre><span class="c"># the conceptual core (see cma_es.py for the full standard algorithm)</span>
+X = mean + sigma * (B @ (D * z))   <span class="c"># sample ~ N(mean, sigma^2 C)</span>
+order = argsort(fitness(X))         <span class="c"># rank candidates</span>
+mean  = mean + sigma * (weights @ y[order[:mu]])   <span class="c"># recombine</span>
+C     = (1-c1-cmu)*C + c1*rank_one + cmu*rank_mu   <span class="c"># learn the shape</span>
+sigma = sigma * exp(...)            <span class="c"># adapt the step size</span></pre>
+</section>
+
+<!-- ============================ BAYESIAN ============================ -->
+<section id="bayes">
+  <h2><span class="num">06</span> Bayesian Optimization</h2>
+  <p class="lede">When every evaluation is precious, spend compute to <em>think</em> instead of to sample.</p>
+
+  <p>
+    Everything so far burns through thousands of evaluations. But what if a single
+    <code>f(x)</code> costs an hour of simulation, a day of GPU training, or a real
+    physical experiment? Then you can afford only a few dozen, and you must choose
+    each one wisely. Bayesian optimization is the answer, and it works by building a
+    cheap <strong>model of the expensive function</strong>:
+  </p>
+  <ol>
+    <li><strong>Surrogate.</strong> Fit a <em>Gaussian Process</em> to the points seen
+      so far. A GP returns, for <em>any</em> input, both a predicted mean
+      <code>μ(x)</code> and an honest <em>uncertainty</em> <code>σ(x)</code> — wide
+      where you have no data, tight where you've measured.</li>
+    <li><strong>Acquisition.</strong> Use that uncertainty to decide where to look
+      next. <em>Expected Improvement</em> scores each candidate by how much it might
+      beat the current best, integrating over the GP's uncertainty:
+      <div class="formula" style="margin:12px 0">
+        EI(x) = (f<sub>best</sub> − μ(x))·Φ(z) + σ(x)·φ(z),&nbsp;&nbsp; z = (f<sub>best</sub> − μ(x)) / σ(x)
+      </div>
+      The first term rewards a <em>low predicted mean</em> (exploitation); the second
+      rewards <em>high uncertainty</em> (exploration). EI automatically balances them.</li>
+    <li><strong>Evaluate</strong> the true <code>f</code> at the EI maximizer, add the
+      point, refit, repeat.</li>
+  </ol>
+
+  <div class="demo" data-demo="bayes"></div>
+
+  <div class="callout good">
+    <strong>Watch it reason.</strong> The dashed grey curve is the hidden function
+    (the algorithm cannot see it). Blue is the GP's mean belief; the blue band is its
+    ±2σ uncertainty. Green at the bottom is Expected Improvement, and the white line
+    is where it will sample next. Hit <strong>"sample next"</strong> and watch the
+    band collapse around the new point and EI redistribute. Notice it doesn't just
+    drill into the current best — it keeps probing wide, uncertain regions, because EI
+    values the <em>chance</em> of a surprise. <code>length scale</code> sets how smooth
+    it assumes <code>f</code> is; <code>ξ</code> tilts the explore/exploit balance.
+  </div>
+
+  <p>
+    The pay-off is dramatic sample efficiency: tens of evaluations where a swarm would
+    use thousands. The cost is the <code>O(n³)</code> GP fit, which is exactly why BO
+    is reserved for the regime where <code>f</code> is so expensive that <code>n</code>
+    stays small. It is the standard tool behind automated hyperparameter tuning.
+  </p>
+</section>
+
+<!-- ============================ COMPARE ============================ -->
+<section id="compare">
+  <h2><span class="num">07</span> So which one do I use?</h2>
+  <p class="lede">There is no universal winner — and that's a theorem, not an excuse.</p>
+
+  <p>
+    The <strong>No Free Lunch theorem</strong> (Wolpert &amp; Macready, 1997) proves
+    that averaged over <em>all</em> possible objective functions, every optimizer
+    performs identically. A method only wins by matching the <em>structure</em> of
+    your particular problem. So the real question is never "what's the best algorithm"
+    but "what do I know about my landscape and my budget?"
+  </p>
+
+  <table class="cmp">
+    <thead><tr><th>Method</th><th>Best when…</th><th>Evaluation cost</th><th>Watch out for</th></tr></thead>
+    <tbody>
+      <tr><td>Hill climbing<br><span class="pill">baseline</span></td><td>landscape is mostly unimodal; you want a sanity baseline</td><td>cheap, many</td><td>trapped by the first local minimum</td></tr>
+      <tr><td>Simulated annealing</td><td>cheap evals, need to escape local minima, no population budget</td><td>cheap, many</td><td>cooling schedule tuning</td></tr>
+      <tr><td>Particle swarm</td><td>continuous, multimodal, want few knobs and fast setup</td><td>cheap, many</td><td>premature convergence</td></tr>
+      <tr><td>Genetic algorithm</td><td>rugged/deceptive or combinatorial structure; building blocks matter</td><td>cheap, many</td><td>slower; needs diversity care</td></tr>
+      <tr><td>Differential evolution</td><td>a strong, robust default for continuous problems</td><td>cheap, many</td><td>F/CR choice on hard cases</td></tr>
+      <tr><td>CMA-ES</td><td>smooth, ill-conditioned, <code>d ≲ 100</code>; sample efficiency matters</td><td>moderate</td><td>O(d²) cost; multimodal traps</td></tr>
+      <tr><td>Bayesian optimization</td><td><strong>expensive</strong> evals; only tens of samples affordable</td><td>very few, costly</td><td>O(n³) fit; low dimension</td></tr>
+    </tbody>
+  </table>
+
+  <p>
+    A practical decision tree: <strong>Is each evaluation expensive?</strong> →
+    Bayesian optimization. Otherwise, <strong>is the landscape smooth and
+    ill-conditioned, in modest dimension?</strong> → CMA-ES. Otherwise, for a rugged
+    multimodal continuous problem, reach for <strong>DE, PSO, or a GA</strong> — and
+    always run <strong>random-restart hill climbing</strong> as the baseline they must
+    beat. If a fancy method can't beat random restarts, it isn't earning its
+    complexity.
+  </p>
+
+  <div class="callout">
+    <strong>The meta-lesson.</strong> In practice the biggest wins rarely come from
+    the algorithm choice. They come from (1) a <em>good representation</em> of the
+    problem, (2) <em>warm starts</em> from a sensible heuristic instead of random
+    initialization, and (3) a <em>fast surrogate</em> so you can afford more
+    evaluations. The optimizer is the last 10%.
+  </div>
+</section>
+
+<!-- ============================ STORY ============================ -->
+<section id="story">
+  <h2><span class="num">08</span> Where this came from</h2>
+  <p class="lede">An honest postmortem of the hackathon that produced this toolbox.</p>
+
+  <p>
+    This library was not built in the abstract. It came out of the
+    <strong>Delta 2026 hackathon</strong>, whose Task D asked us to time the
+    <strong>341 traffic lights</strong> of a city road network to minimize the total
+    delay of <strong>5,215 vehicles</strong> over a four-hour mesoscopic simulation.
+    Each light has phases, green durations, and an <em>offset</em> — so the decision
+    vector lived in a few hundred dimensions, and the only way to score a candidate
+    was to run the whole simulation. A textbook expensive, high-dimensional black box.
+  </p>
+
+  <p>
+    So we threw the entire zoo at it: a multi-swarm PSO with exploratory, balanced,
+    and exploitative sub-swarms; genetic algorithms over offsets and phase orderings;
+    differential evolution and simulated annealing on a fast analytical proxy;
+    Bayesian optimization with random embeddings to fight the dimensionality; even a
+    Navier–Stokes fluid analogy for green-time allocation. The winning recipe was a
+    multi-swarm PSO seeded from a green-wave heuristic, polished by a
+    simulation-feedback loop.
+  </p>
+
+  <div class="callout warn">
+    <strong>The twist.</strong> Once we reverse-engineered the official simulator, the
+    problem turned out to be nearly <em>trivial</em>: with the given demand the network
+    was so under-saturated that almost any sane configuration — essentially
+    "all-green, never stop anyone" — was within a fraction of a percent of optimal.
+    The elaborate optimizer tournament was, for <em>that</em> instance, overkill.
+  </div>
+
+  <p>
+    Which is exactly why this site exists. The contest answer was throwaway, but the
+    <strong>toolbox and the understanding were not</strong>. We pulled the algorithms
+    out of the one-off hackathon code, rewrote them cleanly against standard benchmark
+    functions where their real character shows, tested them, and wrote up the theory
+    you just read. The lesson the hackathon taught — <em>understand your problem
+    before you optimize it</em> — is the same one in the box above. The optimizer is
+    the last 10%.
+  </p>
+
+  <p style="margin-top:28px">
+    📦 The Python package, tests, and these pages live together as one repo:
+    <code>metaheuristics-lab</code>. Every algorithm here is ~80 readable lines with a
+    docstring that <em>is</em> its theory section. Clone it, <code>pip install -e .</code>,
+    and <code>python examples/compare_optimizers.py</code> to reproduce the leaderboard.
+  </p>
+</section>
+
+</main>
+
+<footer class="wrap">
+  <p>
+    <strong>metaheuristics-lab</strong> — a clean library of black-box optimizers +
+    this explainer. NumPy-only, MIT-licensed.
+  </p>
+  <p>
+    Built from the Delta 2026 hackathon traffic-optimization project. All demos run
+    the real algorithms live in your browser — no server, no build step. View the
+    source of any demo in <code>web/js/</code>.
+  </p>
+</footer>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
