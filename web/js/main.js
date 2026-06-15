@@ -261,6 +261,11 @@ function mount2D(root, key) {
 
   const TRAIL = 8;
   let running = true, algo, fn, map, bg, ctx, W, H, prev, curr, history = [], tStart = 0, tickMs = SPEEDS.normal;
+  // The demo animates only while it is on screen, and after it has converged it
+  // pauses for a beat and restarts, so it is always running from the start when
+  // you actually look at it.
+  let inView = false, started = false, finishing = false, restartAt = 0, ticks = 0;
+  const LOOP_TICKS = 55;
   const readParams = () => { const p = { ...cfg.defaults }; for (const id in C.inputs) p[id] = parseFloat(C.inputs[id].value); return p; };
 
   function rebuild() {
@@ -269,6 +274,7 @@ function mount2D(root, key) {
     bg = renderLandscape(fn, W, H); map = makeMapper(fn, W, H);
     algo = cfg.factory(fn, readParams());
     prev = algo.frame(); curr = prev; history = []; tStart = performance.now();
+    ticks = 0; finishing = false;
     paint(0);
   }
   function paint(e) {
@@ -294,6 +300,7 @@ function mount2D(root, key) {
     narr.textContent = algo.status();
   }
   function advance() {
+    ticks++;
     for (let s = 0; s < (algo.stepsPerTick || 1); s++) algo.step();
     history.push(curr); if (history.length > TRAIL) history.shift();
     prev = curr; curr = algo.frame(); tStart = performance.now(); refreshPanel();
@@ -308,13 +315,25 @@ function mount2D(root, key) {
   C.reset.addEventListener("click", () => { rebuild(); refreshPanel(); });
 
   function loop(now) {
-    if (running && algo) {
-      let t = (now - tStart) / tickMs;
-      if (t >= 1) { advance(); t = 0; }
-      paint(easeInOut(Math.min(1, t)));
+    if (running && inView && algo) {
+      if (finishing) {
+        paint(1);
+        if (now >= restartAt) { rebuild(); refreshPanel(); }
+      } else {
+        let t = (now - tStart) / tickMs;
+        if (t >= 1) { advance(); t = 0; }
+        paint(easeInOut(Math.min(1, t)));
+        if (ticks >= LOOP_TICKS) { finishing = true; restartAt = now + 1100; }
+      }
     }
     requestAnimationFrame(loop);
   }
+  // Start fresh the first time the demo scrolls into view; pause when it leaves.
+  const io = new IntersectionObserver((es) => es.forEach((e) => {
+    inView = e.isIntersecting;
+    if (inView && !started) { started = true; rebuild(); refreshPanel(); }
+  }), { threshold: 0.3 });
+  io.observe(root);
   let rt; window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => { rebuild(); refreshPanel(); }, 200); });
   rebuild(); refreshPanel(); requestAnimationFrame(loop);
 }
@@ -355,7 +374,8 @@ function mountBayes(root) {
   grid.append(col, wrap);
   root.append(head, grid);
 
-  let algo, ctx, W, H, auto = false, seed = 7, frame = 0;
+  let algo, ctx, W, H, auto = false, seed = 7, frame = 0, inView = false, started = false, restartAt = 0;
+  const MAX_STEPS = 9;
   function rebuild() {
     const d = setupCanvas(canvas); ctx = d.ctx; W = d.W; H = d.H;
     algo = createBayes({ seed, length: parseFloat(wrap.querySelector("#len").value), xi: parseFloat(wrap.querySelector("#xi").value) });
@@ -368,8 +388,24 @@ function mountBayes(root) {
   autoBtn.addEventListener("click", () => { auto = !auto; autoBtn.textContent = auto ? "❚❚ stop" : "▶ auto"; });
   resetBtn.addEventListener("click", () => { seed = (seed * 1103515245 + 12345) & 0x7fffffff; rebuild(); });
   let rt; window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(rebuild, 200); });
-  function loop() { if (auto) { frame++; if (frame % 45 === 0) { algo.step(); render(); } } requestAnimationFrame(loop); }
-  rebuild(); loop();
+  // Auto-run only while on screen; the first time it scrolls in, start sampling.
+  const io = new IntersectionObserver((es) => es.forEach((e) => {
+    inView = e.isIntersecting;
+    if (inView && !started) { started = true; auto = true; autoBtn.textContent = "❚❚ stop"; }
+  }), { threshold: 0.3 });
+  io.observe(root);
+  function loop(now) {
+    if (auto && inView) {
+      if (restartAt) {
+        if (now >= restartAt) { restartAt = 0; seed = (seed * 1103515245 + 12345) & 0x7fffffff; rebuild(); }
+      } else {
+        frame++;
+        if (frame % 40 === 0) { algo.step(); render(); if (algo.iter >= MAX_STEPS) restartAt = now + 1300; }
+      }
+    }
+    requestAnimationFrame(loop);
+  }
+  rebuild(); requestAnimationFrame(loop);
 }
 
 function boot() {
