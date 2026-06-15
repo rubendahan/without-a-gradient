@@ -1,0 +1,36 @@
+# Publishes the static explainer in web/ to GitHub Pages.
+# No build step: the site is vanilla HTML/CSS/ES-modules, so we just upload the
+# web/ directory as the Pages artifact and deploy it. Source is set to "GitHub
+# Actions" in the repo's Pages settings (done once, via the API, on first setup).
+name: Deploy explainer to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+# Least-privilege token for the deploy.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Only one Pages deploy at a time; newer pushes win.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: web            # the site root is web/index.html
+      - id: deployment
+        uses: actions/deploy-pages@v4
