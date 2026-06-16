@@ -123,7 +123,7 @@ def characterize(
 
     Builds (or accepts) a network, evaluates the all-green baseline, a random
     search, and an optimised plan on the same :class:`DelayProxy`, and reports
-    the gap. Swap the proxy for Mireo's simulator (via :func:`delta.solver.solve`
+    the gap. Swap the proxy for Delta's simulator (via :func:`delta.solver.solve`
     with ``simulator=``) to run the very same diagnostic on the real objective.
     """
     if network is None:

@@ -3,9 +3,9 @@ requires = ["setuptools>=64"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "delta-mireo"
+name = "delta-2026"
 version = "0.1.0"
-description = "Delta 2026 hackathon deliverable: traffic-signal retiming via metaheuristics, with an honest mesoscopic delay proxy standing in for Mireo's simulator."
+description = "Delta 2026 competition deliverable (Delta was sponsored by Mireo): traffic-signal retiming via metaheuristics, with an honest mesoscopic delay proxy standing in for Delta's simulator."
 readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "MIT" }

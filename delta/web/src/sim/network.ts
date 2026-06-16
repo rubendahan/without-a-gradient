@@ -62,7 +62,7 @@ export interface CityOptions {
   load?: number // target mean degree of saturation; 0.55 is comfortably undersaturated
 }
 
-// Build a small, reproducible grid city as a stand-in for Mireo's. The real
+// Build a small, reproducible grid city as a stand-in for Delta's. The real
 // Delta network had about 341 signals; this stays small enough to optimise in
 // the browser in a fraction of a second while exercising every term in the
 // delay model.

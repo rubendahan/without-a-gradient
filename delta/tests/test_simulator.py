@@ -1,7 +1,7 @@
 """Tests for the delay proxy (delta.simulator).
 
 These check the *qualitative physics* the proxy must obey, the same sanity
-properties Mireo's real simulator would satisfy: non-negative delay, more
+properties Delta's real simulator would satisfy: non-negative delay, more
 saturation -> more delay, and starving a movement of green is terrible.
 """
 from __future__ import annotations

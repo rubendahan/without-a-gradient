@@ -1,4 +1,4 @@
-// The delay model: a transparent stand-in for Mireo's mesoscopic simulator.
+// The delay model: a transparent stand-in for Delta's mesoscopic simulator.
 //
 // THIS IS A PROXY, NOT THE REAL SIMULATOR. The real Delta objective was a
 // proprietary mesoscopic traffic simulator that ran thousands of vehicles over

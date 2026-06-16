@@ -72,7 +72,7 @@ def solve(
         City to optimise. Defaults to :func:`delta.network.build_example_city`.
     simulator:
         Any object with ``evaluate(plan_vector) -> float`` (lower = better).
-        Defaults to the :class:`DelayProxy` stand-in. **Pass Mireo's real
+        Defaults to the :class:`DelayProxy` stand-in. **Pass Delta's real
         simulator here to optimise the actual objective** (see the
         SIMULATOR-SWAP note in :mod:`delta.simulator`).
     optimizer:

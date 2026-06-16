@@ -1,10 +1,10 @@
 """DelayProxy, a self-contained mesoscopic delay model (a STAND-IN simulator).
 
 =============================================================================
-  THIS IS A PROXY, NOT MIREO'S SIMULATOR.
+  THIS IS A PROXY, NOT DELTA'S SIMULATOR.
 =============================================================================
-The real Delta 2026 objective was a proprietary *mesoscopic* traffic simulator
-owned by Mireo: you submit a full signal plan and it simulates ~5,215 vehicles
+The real Delta 2026 objective was the competition's proprietary *mesoscopic*
+traffic simulator: you submit a full signal plan and it simulates ~5,215 vehicles
 over a 4-hour horizon and returns ONE scalar, the total vehicle delay. That
 simulator is not available to us, so this module provides a transparent,
 NumPy-only **analytical delay model** with the *same query interface*:
@@ -13,7 +13,7 @@ NumPy-only **analytical delay model** with the *same query interface*:
 
 Everything downstream (the encoding, the solver, the diagnostics) talks to that
 one method. To plug in the real engine, see :class:`Simulator` and the
-``SIMULATOR-SWAP`` note at the bottom of this file, a Mireo engineer only has
+``SIMULATOR-SWAP`` note at the bottom of this file, you only have
 to implement the same ``evaluate`` signature.
 
 The delay model
@@ -50,7 +50,7 @@ offsets at all.
 Why a proxy is honest and useful here
 -------------------------------------
 The point of the Delta deliverable is the *optimisation methodology* and the
-*finding* about the objective's shape, not a re-implementation of Mireo's
+*finding* about the objective's shape, not a re-implementation of Delta's
 physics. This proxy reproduces the qualitative behaviour that drove the finding
 -- delay is flat and low while the network is undersaturated, and rises sharply
 only near capacity, so the flat-ceiling diagnostic in :mod:`delta.analysis` is
@@ -71,7 +71,7 @@ _OVERFLOW_K = 0.5
 
 
 class DelayProxy:
-    """Analytical stand-in for Mireo's mesoscopic simulator.
+    """Analytical stand-in for Delta's mesoscopic simulator.
 
     Construct it from a :class:`RoadNetwork` and a :class:`SignalPlan` encoder,
     then call :meth:`evaluate` on a decision vector to get total delay. The class
@@ -205,11 +205,11 @@ class DelayProxy:
 class Simulator:
     """Abstract query interface a city simulator must satisfy.
 
-    Both :class:`DelayProxy` (this package's stand-in) and Mireo's real engine
+    Both :class:`DelayProxy` (this package's stand-in) and Delta's real engine
     are *Simulators* in the sense below. The optimiser and diagnostics depend
     only on this one method, so either can be dropped in interchangeably.
 
-    .. rubric:: SIMULATOR-SWAP, how Mireo plugs in the real simulator
+    .. rubric:: SIMULATOR-SWAP, how to plug in the real simulator
 
     Implement a class with the single method::
 
@@ -226,6 +226,6 @@ class Simulator:
 
     def evaluate(self, plan_vector: np.ndarray) -> float:  # pragma: no cover
         raise NotImplementedError(
-            "Provide Mireo's mesoscopic simulator here; see the SIMULATOR-SWAP "
+            "Provide Delta's mesoscopic simulator here; see the SIMULATOR-SWAP "
             "note in delta/simulator.py."
         )

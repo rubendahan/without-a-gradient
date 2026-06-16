@@ -94,7 +94,8 @@ ones, and Bayesian optimisation wins when each evaluation is precious.
 </a>
 </div>
 
-Delta was a hackathon set by **Mireo**: retime a whole city's traffic signals so a
+Delta 2026 was an international applied-mathematics competition (sponsored by
+**Mireo**); the challenge was to retime a whole city's traffic signals so a
 fleet of vehicles loses as little total time as possible. You submit a plan, a
 simulator runs four hours of the city, and you get back one number.
 
@@ -106,7 +107,7 @@ The result worth keeping was understanding the objective, not beating it. The
 drag the demand and watch the optimiser's gain sit near zero until the city reaches
 capacity.
 
-The application lives in [`delta/`](delta/). The real objective is Mireo's
+The application lives in [`delta/`](delta/). The real objective is Delta's
 simulator, which we do not have, so it ships a transparent Webster and HCM delay
 model with the same query interface. To run on the real engine, implement one
 method, `evaluate(plan_vector) -> float`, and pass it to the solver. Nothing else

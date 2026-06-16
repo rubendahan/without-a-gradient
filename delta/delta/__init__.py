@@ -1,6 +1,7 @@
-"""Delta, traffic-signal retiming for the Mireo "Delta 2026" hackathon.
+"""Delta, traffic-signal retiming for the "Delta 2026" competition (Task D).
 
-This package is the hackathon team's deliverable for Mireo. It packages the
+This package is our Delta 2026 competition team's deliverable (Delta was
+sponsored by Mireo). It packages the
 optimisation approach we used on Task D (retime a city's traffic signals to
 minimise total vehicle delay over a 4-hour simulation) together with the
 diagnostic that captures our key finding.
@@ -9,16 +10,16 @@ Layout
 ------
 * :mod:`delta.network`   , the road-network data model and an example city.
 * :mod:`delta.plan`      , decision-vector <-> structured signal-plan encoding.
-* :mod:`delta.simulator` , ``DelayProxy``, a documented STAND-IN for Mireo's
+* :mod:`delta.simulator` , ``DelayProxy``, a documented STAND-IN for Delta's
   proprietary simulator, exposing the same ``evaluate(plan) -> float`` query.
 * :mod:`delta.solver`    , wires metaheuristics-lab (multi-population PSO) to
   the problem.
 * :mod:`delta.analysis`  , the flat-ceiling diagnostic (our key finding).
 
 IMPORTANT: :class:`delta.simulator.DelayProxy` is a transparent analytical
-stand-in, **not** Mireo's real simulator (which is proprietary and unavailable
-to us). It mirrors the real query interface so Mireo can drop their own engine
-in unchanged, see the SIMULATOR-SWAP note in :mod:`delta.simulator`.
+stand-in, **not** Delta's real simulator (which is proprietary and unavailable
+to us). It mirrors the real query interface so the real engine can drop in
+unchanged, see the SIMULATOR-SWAP note in :mod:`delta.simulator`.
 
 Quick start
 -----------

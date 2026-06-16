@@ -43,7 +43,8 @@ export default function App() {
         <div className="grid gap-6">
           <Block title="The objective is a black box">
             <p>
-              Delta was a hackathon set by Mireo. The task was to retime a whole city's traffic
+              Delta 2026 was an international applied-mathematics competition (sponsored by Mireo).
+              The challenge was to retime a whole city's traffic
               signals so a fleet of vehicles loses as little total time as possible over four hours.
               You submit a full plan and a traffic simulator hands back a single number, the total
               delay. There is no gradient and no formula, and every query is slow, so the evaluation
@@ -59,7 +60,7 @@ export default function App() {
 
           <Block title="The model running on this page is a stand-in">
             <p>
-              The real objective is Mireo's mesoscopic simulator, which we do not have. So this page
+              The real objective is Delta's mesoscopic simulator, which we do not have. So this page
               runs a transparent replacement: a Webster and HCM intersection-delay model, the
               textbook physics of how long cars wait at a light. Its delay stays low and flat while a
               movement clears its queue each cycle and rises sharply as the movement approaches
@@ -98,7 +99,7 @@ function Hero() {
         ← the methods explainer
       </a>
       <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-[var(--color-accent-soft)] px-3 py-1 text-xs font-medium text-[var(--color-accent)]">
-        Delta 2026 · a Mireo hackathon project
+        Delta 2026 · sponsored by Mireo
       </div>
       <h1 className="text-4xl font-bold leading-[1.08] tracking-tight sm:text-5xl">
         Retiming a city's traffic lights,
@@ -169,7 +170,7 @@ function Footer() {
   return (
     <footer className="mt-20 border-t border-[var(--color-line)] pt-8 text-sm text-[var(--color-muted)]">
       <p>
-        Built from the Delta 2026 traffic-optimisation hackathon set by Mireo. The optimisers come
+        Built from the Delta 2026 traffic-optimisation challenge (Delta was sponsored by Mireo). The optimisers come
         from a small NumPy library; the delay model on this page is an honest stand-in for the real
         simulator, with the same query interface so the real engine drops in unchanged.
       </p>

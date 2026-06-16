@@ -173,7 +173,7 @@ def build_example_city(
     seed: int = 0,
     load: float = 0.55,
 ) -> RoadNetwork:
-    """Construct a small, reproducible example city as a stand-in for Mireo's.
+    """Construct a small, reproducible example city as a stand-in for Delta's.
 
     The real Delta network had ~341 signals; this builds a smaller but
     structurally faithful grid-with-arterials so the package runs in seconds on

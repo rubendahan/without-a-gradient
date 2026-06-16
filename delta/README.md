@@ -1,16 +1,17 @@
-# Delta: traffic-signal retiming for the Mireo "Delta 2026" hackathon
+# Delta: traffic-signal retiming for the "Delta 2026" competition (Task D)
 
-**A deliverable from our hackathon team to Mireo.** This package contains the
+**A deliverable from our Delta 2026 competition team** (Delta was sponsored by
+Mireo). This package contains the
 optimisation approach we built for **Task D**, retiming a city's traffic signals
 so a fleet of vehicles loses as little total time as possible over a 4-hour
 simulation, together with the diagnostic that captures our key finding.
 
 > ### ⚠️ Honest note on the simulator
-> The real Delta objective is **Mireo's proprietary mesoscopic traffic
+> The real Delta objective is **Delta's proprietary mesoscopic traffic
 > simulator**, which we do not have. So this package ships a transparent,
 > self-contained **delay *proxy*** (`delta.simulator.DelayProxy`) that mirrors
 > the real query interface. It is clearly marked as a stand-in everywhere.
-> **To run on the real objective, Mireo drops in its own simulator by
+> **To run on the real objective, drop the real simulator in by
 > implementing one method**. See *[Plugging in the real simulator](#plugging-in-the-real-simulator)*.
 
 ---
@@ -130,14 +131,14 @@ splits, offsets and cycle lengths (exactly as `DelayProxy` does). Then:
 from delta import build_example_city, solve   # or your own RoadNetwork
 from delta.plan import SignalPlan
 
-class MireoSimulator:
+class DeltaSimulator:
     def evaluate(self, plan_vector):
         timings = plan.from_vector(plan_vector)   # decode if you need structure
-        return run_mireo_mesoscopic_sim(timings)  # your engine -> total delay
+        return run_delta_mesoscopic_sim(timings)  # the real engine -> total delay
 
 network = build_example_city()                    # or describe your real city
 plan = SignalPlan(network)
-outcome = solve(network, simulator=MireoSimulator())
+outcome = solve(network, simulator=DeltaSimulator())
 print(outcome.result.best_f, outcome.result.best_x)
 ```
 
@@ -159,7 +160,7 @@ NumPy-only and fully documented in `delta/simulator.py`. Per movement it sums:
 Plus a small **corridor-coordination** term that rewards offsets forming a good
 green wave. The proxy reproduces the *qualitative* behaviour that drove our
 finding (flat and cheap while undersaturated, steep near capacity) on a model we
-can fully explain. It is **not** Mireo's physics; it is an honest stand-in with
+can fully explain. It is **not** Delta's physics; it is an honest stand-in with
 a matching interface.
 
 ## Package layout
