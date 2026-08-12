@@ -237,38 +237,40 @@
   </p>
 
   <div class="fig">
-    <svg viewBox="0 0 480 244" role="img" aria-label="Tip-to-tail sum of the three PSO velocity components.">
-      <!-- baseline reference -->
-      <line x1="36" y1="185" x2="444" y2="185" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="2 5"/>
-      <!-- targets pi and g-hat as faint reference points -->
-      <circle cx="250" cy="58" r="3.5" fill="none" stroke="#56d364" stroke-width="1.4"/>
-      <text x="258" y="54" font-size="11" fill="#56d364">p&#7522; (own best)</text>
-      <circle cx="392" cy="92" r="3.5" fill="none" stroke="#5ec8ff" stroke-width="1.4"/>
-      <text x="400" y="88" font-size="11" fill="#5ec8ff">&#285; (swarm best)</text>
-      <!-- tip-to-tail components -->
-      <line x1="70" y1="185" x2="165" y2="179" stroke="#f0b72f" stroke-width="2.6" marker-end="url(#ah-gold)"/>
-      <line x1="165" y1="179" x2="235" y2="127" stroke="#56d364" stroke-width="2.6" marker-end="url(#ah-green)"/>
-      <line x1="235" y1="127" x2="313" y2="67" stroke="#5ec8ff" stroke-width="2.6" marker-end="url(#ah-blue)"/>
+    <svg viewBox="0 0 480 244" role="img" aria-label="Tip-to-tail sum of the three PSO velocity components, each pull drawn along the direction of its own target.">
+      <!-- direction rays: each coloured pull is a fraction c*r of the way along its own ray -->
+      <line x1="64" y1="204" x2="430" y2="130" stroke="#56d364" stroke-width="1" stroke-dasharray="4 4" opacity="0.40"/>
+      <line x1="64" y1="204" x2="236" y2="40"  stroke="#5ec8ff" stroke-width="1" stroke-dasharray="4 4" opacity="0.40"/>
+      <!-- targets pi and g-hat, at the far end of their rays -->
+      <circle cx="430" cy="130" r="3.5" fill="none" stroke="#56d364" stroke-width="1.4"/>
+      <text x="430" y="120" font-size="11" fill="#56d364" text-anchor="middle">p&#7522; (own best)</text>
+      <circle cx="236" cy="40" r="3.5" fill="none" stroke="#5ec8ff" stroke-width="1.4"/>
+      <text x="236" y="26" font-size="11" fill="#5ec8ff" text-anchor="middle">&#285; (swarm best)</text>
       <!-- resultant new velocity -->
-      <line x1="70" y1="185" x2="313" y2="67" stroke="#e8eef6" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#ah-white)"/>
-      <!-- endpoints -->
-      <circle cx="70" cy="185" r="4.5" fill="#5ec8ff"/>
-      <circle cx="313" cy="67" r="4.5" fill="#ffffff"/>
+      <line x1="64" y1="204" x2="321.72" y2="116.76" stroke="#e8eef6" stroke-width="1.8" stroke-dasharray="6 4" marker-end="url(#ah-white)"/>
+      <!-- tip-to-tail components: w*v (gold), then 0.30 of the ray to pi, then 0.36 of the ray to g-hat -->
+      <line x1="64" y1="204" x2="150" y2="198" stroke="#f0b72f" stroke-width="2.4" marker-end="url(#ah-gold)"/>
+      <line x1="150" y1="198" x2="259.8" y2="175.8" stroke="#56d364" stroke-width="2.4" marker-end="url(#ah-green)"/>
+      <line x1="259.8" y1="175.8" x2="321.72" y2="116.76" stroke="#5ec8ff" stroke-width="2.4" marker-end="url(#ah-blue)"/>
+      <!-- endpoint -->
+      <circle cx="64" cy="204" r="4.5" fill="#5ec8ff"/>
       <!-- labels -->
-      <text x="64" y="201" font-size="11.5" fill="#5ec8ff" text-anchor="end">x&#7522;</text>
-      <text x="322" y="64" font-size="11.5" fill="#ffffff">x&#7522; + v&#7522;</text>
-      <text x="118" y="201" font-size="11" fill="#f0b72f" text-anchor="middle">w v&#7522;</text>
-      <text x="178" y="177" font-size="11" fill="#56d364" text-anchor="start">c&#8321;r&#8321;(p&#7522;&#8722;x&#7522;)</text>
-      <text x="280" y="108" font-size="11" fill="#5ec8ff" text-anchor="start">c&#8322;r&#8322;(&#285;&#8722;x&#7522;)</text>
-      <text x="205" y="110" font-size="11" fill="#e8eef6" text-anchor="middle">new v&#7522;</text>
+      <text x="58" y="210" font-size="11.5" fill="#5ec8ff" text-anchor="end">x&#7522;</text>
+      <text x="330" y="110" font-size="11.5" fill="#ffffff" text-anchor="start">x&#7522; + v&#7522;</text>
+      <text x="105" y="218" font-size="11" fill="#f0b72f" text-anchor="middle">w v&#7522;</text>
+      <text x="212" y="202" font-size="11" fill="#56d364" text-anchor="start">c&#8321;r&#8321;(p&#7522;&#8722;x&#7522;)</text>
+      <text x="330" y="142" font-size="11" fill="#5ec8ff" text-anchor="start">c&#8322;r&#8322;(&#285;&#8722;x&#7522;)</text>
+      <text x="166" y="156" font-size="11" fill="#e8eef6" text-anchor="middle">new v&#7522;</text>
     </svg>
   </div>
   <p class="caption">
     <b>fig. 1.</b> The new velocity \(\mathbf{v}_i\) is the tip-to-tail sum of carried
     momentum (gold), the pull toward the particle's own best \(\mathbf{p}_i\) (green),
-    and the pull toward the swarm best \(\hat{\mathbf{g}}\) (blue). Their resultant
-    carries the particle from \(\mathbf{x}_i\) to \(\mathbf{x}_i + \mathbf{v}_i\). The
-    random weights \(r_1, r_2\) rescale the two coloured pulls every step.
+    and the pull toward the swarm best \(\hat{\mathbf{g}}\) (blue). Each coloured pull
+    is parallel to the dashed ray running from \(\mathbf{x}_i\) to its own target, and
+    covers only the fraction \(c\,r\) of the way there. Their resultant carries the
+    particle from \(\mathbf{x}_i\) to \(\mathbf{x}_i + \mathbf{v}_i\). The random
+    weights \(r_1, r_2\) rescale the two coloured pulls every step.
   </p>
 
   <h3>What each knob does</h3>
@@ -731,15 +733,15 @@ next generation <span class="op">&#8592;</span> elite &#8746; offspring</div>
       <line x1="435" y1="66" x2="441" y2="66" stroke="#fff" stroke-width="1.2"/>
       <text x="430" y="96" font-size="10" fill="#fff" text-anchor="middle">x&#9733;</text>
       <!-- gen 1: near isotropic -->
-      <ellipse cx="120" cy="168" rx="15" ry="12" fill="#5ec8ff" opacity="0.10" stroke="#5ec8ff" stroke-width="1.6" transform="rotate(-20 120 168)"/>
+      <ellipse cx="120" cy="168" rx="15" ry="12" fill="#5ec8ff" opacity="0.10" stroke="#5ec8ff" stroke-width="1.6" transform="rotate(-11 120 168)"/>
       <circle cx="120" cy="168" r="2.6" fill="#5ec8ff"/>
       <text x="120" y="200" font-size="10.5" fill="#5ec8ff" text-anchor="middle">gen 1</text>
       <!-- gen 5: elongating -->
-      <ellipse cx="232" cy="126" rx="32" ry="12" fill="#f0b72f" opacity="0.10" stroke="#f0b72f" stroke-width="1.6" transform="rotate(-32 232 126)"/>
+      <ellipse cx="232" cy="126" rx="32" ry="12" fill="#f0b72f" opacity="0.10" stroke="#f0b72f" stroke-width="1.6" transform="rotate(-17 232 126)"/>
       <circle cx="232" cy="126" r="2.6" fill="#f0b72f"/>
       <text x="232" y="98" font-size="10.5" fill="#f0b72f" text-anchor="middle">gen 5</text>
       <!-- gen 12: long, thin, aligned -->
-      <ellipse cx="336" cy="92" rx="50" ry="9" fill="#56d364" opacity="0.10" stroke="#56d364" stroke-width="1.6" transform="rotate(-37 336 92)"/>
+      <ellipse cx="336" cy="92" rx="50" ry="9" fill="#56d364" opacity="0.10" stroke="#56d364" stroke-width="1.6" transform="rotate(-19 336 92)"/>
       <circle cx="336" cy="92" r="2.6" fill="#56d364"/>
       <text x="300" y="150" font-size="10.5" fill="#56d364" text-anchor="middle">gen 12</text>
     </svg>
