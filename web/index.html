@@ -133,7 +133,8 @@
             The maps show two-dimensional test functions. Blue-tinted regions
             have lower objective values; diamond markers indicate known optima.
             These landmarks are shown to you, not supplied to the algorithms.
-            Each run starts paused and uses a fixed seed so you can replay it.
+            The population and Bayesian experiments start paused and use fixed
+            seeds so you can replay them.
           </p>
         </div>
       </section>
@@ -148,14 +149,16 @@
         </div>
         <p>
           These thirteen starting points follow a numerical gradient down the
-          same curve. Different starts can reach different minima. Click or tap
-          the graph to add your own starting point.
+          same curve. Watch the trajectories and their loss together. Play runs
+          the descent; Step advances one update. Click the landscape to add a
+          starting point and replay.
         </p>
         <div class="demo" data-demo="trap"></div>
         <p class="caption">
-          Hollow circles are starts. Filled circles are resting points. Green
-          marks convergence to the lowest basin in the plotted interval;
-          vermilion marks another basin.
+          Hollow circles mark the starts; blue points are still descending.
+          Green marks convergence to the lowest minimum in this interval,
+          vermilion another local minimum. A number beside a minimum counts the
+          points that settled there.
         </p>
         <details class="theory">
           <summary>The update and its limits</summary>
@@ -163,10 +166,12 @@
             <div class="mathblock">$$x_{t+1}=x_t-\eta f'(x_t)$$</div>
             <p>
               The demo estimates the derivative with a central difference and
-              uses a small fixed step. A step that is too large can increase the
-              objective or oscillate. A zero derivative alone does not prove a
-              minimum. Here we stop when the estimated derivative is small, or
-              at the iteration limit.
+              uses a fixed step size of 0.025. Playback slows the early
+              iterations so their motion is visible; the numerical update is
+              unchanged. A step that is too large can increase the objective or
+              oscillate. A zero derivative alone does not prove a minimum. Here
+              we stop when the estimated derivative is small, or at the
+              iteration limit.
             </p>
           </div>
         </details>

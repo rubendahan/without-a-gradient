@@ -49,3 +49,28 @@ test('PSO: operation detail uses the actual highlighted particle transition', ()
   assert.equal(after.operation.x,before.x); assert.equal(after.operation.y,before.y);
   assert.equal(after.operation.nx,after.dots[0].x); assert.equal(after.operation.ny,after.dots[0].y);
 });
+import { descend, derivative, objective, pointAt, STARTS, STEP_SIZE, MINIMUM } from '../web/js/descent.js';
+
+test('Local descent: every displayed iterate follows the fixed gradient update', () => {
+  for (const start of STARTS) {
+    const run = descend(start);
+    assert.equal(run.path[0], start);
+    assert.ok(run.converged);
+    for (let i=1;i<run.path.length;i++) {
+      assert.ok(Math.abs(run.path[i] - (run.path[i-1] - STEP_SIZE * derivative(run.path[i-1]))) < 1e-12);
+      assert.ok(objective(run.path[i]) <= objective(run.path[i-1]) + 1e-10);
+    }
+    assert.ok(Math.abs(derivative(run.rest)) < 1e-4);
+  }
+});
+test('Local descent: multiple basins and interpolation preserve the actual endpoints', () => {
+  const runs = STARTS.map(descend);
+  assert.ok(new Set(runs.map(r=>r.rest.toFixed(2))).size > 3);
+  const global = runs.filter(r=>Math.abs(r.rest-MINIMUM.x)<.02);
+  assert.ok(global.length>0 && global.length<runs.length);
+  for(const run of runs) {
+    assert.equal(pointAt(run,0),run.start);
+    assert.equal(pointAt(run,1000),run.rest);
+    assert.equal(pointAt(run,.5),(run.path[0]+run.path[1])/2);
+  }
+});

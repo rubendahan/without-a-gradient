@@ -26,7 +26,8 @@ traffic-signal application developed from the Delta 2026 competition.
 
 The site covers particle swarm optimisation, genetic algorithms, differential
 evolution, simulated annealing, CMA-ES and Bayesian optimisation. A separate
-example illustrates local minima with gradient descent.
+example follows thirteen gradient descents, with animated trajectories and a
+loss curve for each starting point.
 
 Each method pairs a running simulation with its loss curve. **Play** runs the
 search, **Step** advances one iteration, and **Reset** repeats the same seeded
