@@ -378,59 +378,6 @@ h3 {
   color: var(--color-muted);
   margin-top: 17px;
 }
-.sweep-panel {
-  border: 1px solid var(--color-line);
-  background: var(--color-card);
-  padding: 25px;
-}
-.sweep-toolbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 25px;
-}
-.sweep-toolbar strong {
-  font-size: 14px;
-  font-weight: 600;
-}
-.sweep-toolbar p {
-  font: 10px/1.7 var(--font-mono);
-  color: var(--color-muted);
-  margin-top: 7px;
-}
-.sweep-toolbar .action-primary {
-  font-size: 12px;
-  white-space: nowrap;
-}
-.sweep-scroll {
-  overflow-x: auto;
-  margin-block: 25px;
-}
-.sweep-scroll svg {
-  display: block;
-  width: 100%;
-  min-width: 540px;
-}
-.chart-empty {
-  padding: 65px 20px;
-  text-align: center;
-  margin: 25px 0;
-  border-block: 1px solid var(--color-line);
-  color: var(--color-muted);
-}
-.chart-empty > span {
-  font:
-    26px Georgia,
-    serif;
-  color: var(--color-ink);
-}
-.chart-empty p {
-  font-size: 14px;
-  margin-top: 15px;
-}
-.sweep-panel > .small-copy {
-  margin: 15px 0;
-}
 .table-scroll {
   overflow-x: auto;
 }
@@ -572,23 +519,6 @@ caption {
     flex-direction: column;
     gap: 20px;
   }
-  .sweep-panel {
-    padding: 18px;
-  }
-  .sweep-toolbar {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 20px;
-  }
-  .sweep-toolbar .action-primary {
-    width: 100%;
-  }
-  .chart-empty {
-    padding: 40px 0;
-  }
-  .chart-empty > span {
-    font-size: 23px;
-  }
 }
 @media (prefers-reduced-motion: reduce) {
   html {
@@ -599,9 +529,7 @@ caption {
     animation: none !important;
   }
 }
-
-.traffic-experiment,
-.sweep-panel {
+.traffic-experiment {
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 3px 14px #223d5610;
@@ -633,9 +561,6 @@ caption {
 .city-frame {
   padding: 10px;
 }
-.sweep-panel {
-  background: #fff;
-}
 .map-toolbar {
   background: #fafbfd;
 }
@@ -657,11 +582,6 @@ caption {
 }
 .model-grid article {
   border-top: 0;
-}
-.chart-empty {
-  background: #f8fafc;
-  border: 0;
-  border-radius: 12px;
 }
 .site-footer .wordmark {
   color: var(--color-ink);

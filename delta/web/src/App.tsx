@@ -1,5 +1,4 @@
 import TrafficLab from "./components/TrafficLab";
-import FlatCeilingChart from "./components/FlatCeilingChart";
 
 export default function App() {
   return (
@@ -59,18 +58,8 @@ export default function App() {
               spillback or clearance intervals.
             </p>
           </section>
-          <section id="finding" className="chapter">
-            <span className="eyebrow">02 / Demand sweep</span>
-            <h2>Optimisation gain at different traffic loads</h2>
-            <p className="section-lead">
-              At each traffic load, compare the best plan found with the
-              demand-based baseline. The bars show the percentage of delay
-              removed by optimisation, using the same search budget each time.
-            </p>
-            <FlatCeilingChart />
-          </section>
           <section id="how" className="chapter">
-            <span className="eyebrow">03 / Inside the model</span>
+            <span className="eyebrow">02 / Inside the model</span>
             <h2>Model assumptions and implementation</h2>
             <div className="model-grid">
               <article>
