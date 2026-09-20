@@ -4,106 +4,206 @@
 
 export const TWO_PI = Math.PI * 2;
 export const lerp = (a, b, t) => a + (b - a) * t;
-export const easeInOut = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
+export const easeInOut = (t) =>
+  t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
 
 // f: R^2 -> R, minimized. Low = good. Each carries its own box and optimum.
 export const FUNCS = {
   rastrigin: {
-    label: "Rastrigin", lo: -5.12, hi: 5.12, opt: [0, 0],
-    f: (x, y) => 20 + (x * x - 10 * Math.cos(TWO_PI * x)) + (y * y - 10 * Math.cos(TWO_PI * y)),
-    blurb: "highly multimodal, ~10^d minima",
+    label: "Rastrigin",
+    lo: -5.12,
+    hi: 5.12,
+    opt: [0, 0],
+    f: (x, y) =>
+      20 +
+      (x * x - 10 * Math.cos(TWO_PI * x)) +
+      (y * y - 10 * Math.cos(TWO_PI * y)),
+    blurb: "many local minima",
   },
   ackley: {
-    label: "Ackley", lo: -5, hi: 5, opt: [0, 0],
+    label: "Ackley",
+    lo: -5,
+    hi: 5,
+    opt: [0, 0],
     f: (x, y) => {
-      const s1 = x * x + y * y, s2 = Math.cos(TWO_PI * x) + Math.cos(TWO_PI * y);
-      return -20 * Math.exp(-0.2 * Math.sqrt(s1 / 2)) - Math.exp(s2 / 2) + 20 + Math.E;
+      const s1 = x * x + y * y,
+        s2 = Math.cos(TWO_PI * x) + Math.cos(TWO_PI * y);
+      return (
+        -20 * Math.exp(-0.2 * Math.sqrt(s1 / 2)) -
+        Math.exp(s2 / 2) +
+        20 +
+        Math.E
+      );
     },
     blurb: "flat outer plateau, central funnel",
   },
   himmelblau: {
-    label: "Himmelblau", lo: -5, hi: 5, opt: [3, 2],
+    label: "Himmelblau",
+    lo: -5,
+    hi: 5,
+    opt: [3, 2],
     f: (x, y) => Math.pow(x * x + y - 11, 2) + Math.pow(x + y * y - 7, 2),
     blurb: "four equal global optima",
   },
   rosenbrock: {
-    label: "Rosenbrock", lo: -2, hi: 2, opt: [1, 1],
+    label: "Rosenbrock",
+    lo: -2,
+    hi: 2,
+    opt: [1, 1],
     f: (x, y) => 100 * Math.pow(y - x * x, 2) + Math.pow(1 - x, 2),
     blurb: "ill-conditioned curved valley",
   },
   sphere: {
-    label: "Sphere", lo: -5, hi: 5, opt: [0, 0],
-    f: (x, y) => x * x + y * y, blurb: "convex, unimodal",
+    label: "Sphere",
+    lo: -5,
+    hi: 5,
+    opt: [0, 0],
+    f: (x, y) => x * x + y * y,
+    blurb: "convex, unimodal",
   },
 };
 
 export function makeMapper(fn, W, H) {
-  const { lo, hi } = fn, span = hi - lo;
+  const span = fn.hi - fn.lo;
+  const size = Math.max(20, Math.min(W - 82, H - 65));
+  const left = Math.max(42, (W - size) / 2 - 5),
+    top = 22;
   return {
-    toPx: (x, y) => [((x - lo) / span) * W, H - ((y - lo) / span) * H],
-    toDom: (px, py) => [lo + (px / W) * span, lo + ((H - py) / H) * span],
-    lo, hi, span,
+    toPx: (x, y) => [
+      left + ((x - fn.lo) / span) * size,
+      top + size - ((y - fn.lo) / span) * size,
+    ],
+    toDom: (x, y) => [
+      fn.lo + ((x - left) / size) * span,
+      fn.lo + ((top + size - y) / size) * span,
+    ],
+    lo: fn.lo,
+    hi: fn.hi,
+    span,
+    left,
+    top,
+    size,
   };
 }
 
-// Topographic depth map: dark = low (good basin), light = high, with crisp
-// iso-contours. Calm and low-saturation so the bright agents read clearly.
+// Equal-scale axes, a pale sequential fill and explicit logarithmic contours.
 export function renderLandscape(fn, W, H) {
   const off = document.createElement("canvas");
-  off.width = W; off.height = H;
-  const ctx = off.getContext("2d");
-  const img = ctx.createImageData(W, H);
-  const { lo, hi } = fn, span = hi - lo;
-  const BANDS = 11;
-
-  let vmin = Infinity, vmax = -Infinity;
-  for (let py = 0; py < H; py += 2)
-    for (let px = 0; px < W; px += 2) {
-      const v = Math.log1p(Math.max(0, fn.f(lo + (px / W) * span, lo + ((H - py) / H) * span)));
-      if (v < vmin) vmin = v; if (v > vmax) vmax = v;
+  off.width = W;
+  off.height = H;
+  const ctx = off.getContext("2d"),
+    map = makeMapper(fn, W, H);
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, W, H);
+  const N = 120,
+    values = new Float64Array((N + 1) * (N + 1));
+  let max = 0;
+  for (let j = 0; j <= N; j++)
+    for (let i = 0; i <= N; i++) {
+      const v = Math.log10(
+        1 +
+          Math.max(
+            0,
+            fn.f(fn.lo + (i / N) * map.span, fn.hi - (j / N) * map.span),
+          ),
+      );
+      values[j * (N + 1) + i] = v;
+      max = Math.max(max, v);
     }
-  const rng = vmax - vmin || 1;
-  // deep (good) -> shallow (bad): navy to cool slate, faint warm tint up high.
-  const deep = [9, 16, 33], shallow = [104, 120, 150];
-
-  for (let py = 0; py < H; py++)
-    for (let px = 0; px < W; px++) {
-      const v = Math.log1p(Math.max(0, fn.f(lo + (px / W) * span, lo + ((H - py) / H) * span)));
-      const t = (v - vmin) / rng;
-      let r = lerp(deep[0], shallow[0], t) + 28 * Math.max(0, t - 0.6);
-      let g = lerp(deep[1], shallow[1], t);
-      let b = lerp(deep[2], shallow[2], t);
-      // iso-contour lines at band boundaries
-      const band = (t * BANDS) % 1;
-      const edge = Math.min(band, 1 - band);
-      if (edge < 0.045) { const k = 1.5; r *= k; g *= k; b *= k; }
-      const idx = (py * W + px) * 4;
-      img.data[idx] = Math.min(255, r); img.data[idx + 1] = Math.min(255, g);
-      img.data[idx + 2] = Math.min(255, b); img.data[idx + 3] = 255;
+  const cell = map.size / N;
+  for (let j = 0; j < N; j++)
+    for (let i = 0; i < N; i++) {
+      const t = Math.pow(values[j * (N + 1) + i] / (max || 1), 0.65);
+      ctx.fillStyle = `rgb(${Math.round(184 + 65 * t)},${Math.round(206 + 44 * t)},${Math.round(224 + 28 * t)})`;
+      ctx.fillRect(
+        map.left + i * cell,
+        map.top + j * cell,
+        cell + 0.4,
+        cell + 0.4,
+      );
     }
-  ctx.putImageData(img, 0, 0);
-
-  // soft vignette for depth
-  const vg = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.3, W / 2, H / 2, Math.max(W, H) * 0.75);
-  vg.addColorStop(0, "rgba(0,0,0,0)"); vg.addColorStop(1, "rgba(0,0,0,0.28)");
-  ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
-
-  // mark global optima with a crisp white target + label
-  const map = makeMapper(fn, W, H);
-  const opts = fn.label === "Himmelblau"
-    ? [[3, 2], [-2.805, 3.131], [-3.779, -3.283], [3.584, -1.848]] : [fn.opt];
-  ctx.save();
-  for (const [ox0, oy0] of opts) {
-    const [ox, oy] = map.toPx(ox0, oy0);
-    ctx.strokeStyle = "rgba(255,255,255,0.85)"; ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.arc(ox, oy, 9, 0, TWO_PI); ctx.stroke();
+  // Marching squares, using a consistent cell diagonal for ambiguous cases.
+  ctx.lineWidth = 0.75;
+  ctx.strokeStyle = "#6887a788";
+  for (let level = 1; level < 15; level++) {
+    const threshold = (max * level) / 15;
     ctx.beginPath();
-    ctx.moveTo(ox - 14, oy); ctx.lineTo(ox - 5, oy); ctx.moveTo(ox + 5, oy); ctx.lineTo(ox + 14, oy);
-    ctx.moveTo(ox, oy - 14); ctx.lineTo(ox, oy - 5); ctx.moveTo(ox, oy + 5); ctx.lineTo(ox, oy + 14); ctx.stroke();
+    for (let j = 0; j < N; j++)
+      for (let i = 0; i < N; i++) {
+        const corners = [
+          [i, j],
+          [i + 1, j],
+          [i + 1, j + 1],
+          [i, j + 1],
+        ];
+        const vs = corners.map(([x, y]) => values[y * (N + 1) + x]);
+        const hits = [];
+        for (let k = 0; k < 4; k++) {
+          const l = (k + 1) % 4;
+          if (vs[k] < threshold !== vs[l] < threshold) {
+            const t = (threshold - vs[k]) / (vs[l] - vs[k]);
+            hits.push([
+              map.left +
+                (corners[k][0] + t * (corners[l][0] - corners[k][0])) * cell,
+              map.top +
+                (corners[k][1] + t * (corners[l][1] - corners[k][1])) * cell,
+            ]);
+          }
+        }
+        for (let k = 0; k + 1 < hits.length; k += 2) {
+          ctx.moveTo(...hits[k]);
+          ctx.lineTo(...hits[k + 1]);
+        }
+      }
+    ctx.stroke();
   }
-  const [lx, ly] = map.toPx(opts[0][0], opts[0][1]);
-  tag(ctx, "global optimum  x★", lx + 14, ly - 14, "rgba(255,255,255,0.9)", "#0a0f1a");
-  ctx.restore();
+  ctx.strokeStyle = "#9eafbf";
+  ctx.lineWidth = 0.8;
+  ctx.strokeRect(map.left, map.top, map.size, map.size);
+  ctx.fillStyle = "#58687a";
+  ctx.font = "10px Segoe UI, sans-serif";
+  for (let i = 0; i <= 4; i++) {
+    const value = fn.lo + (i / 4) * map.span,
+      x = map.left + (i / 4) * map.size,
+      y = map.top + map.size - (i / 4) * map.size;
+    const label = Number(value.toFixed(2)).toString();
+    ctx.textAlign = "center";
+    ctx.fillText(label, x, map.top + map.size + 18);
+    ctx.textAlign = "right";
+    ctx.fillText(label, map.left - 9, y + 3);
+  }
+  ctx.textAlign = "center";
+  ctx.font = "italic 13px Georgia, serif";
+  ctx.fillText("x₁", map.left + map.size / 2, map.top + map.size + 37);
+  ctx.fillText("x₂", map.left - 28, map.top + map.size / 2);
+  ctx.textAlign = "left";
+  ctx.font = "10px Segoe UI, sans-serif";
+  ctx.fillText(fn.label, map.left, 12);
+  ctx.textAlign = "right";
+  ctx.fillText("Contours: log₁₀(1 + f)", map.left + map.size, 12);
+  const opts =
+    fn.label === "Himmelblau"
+      ? [
+          [3, 2],
+          [-2.805118, 3.131312],
+          [-3.77931, -3.283186],
+          [3.584428, -1.848126],
+        ]
+      : [fn.opt];
+  for (const point of opts) {
+    const [x, y] = map.toPx(...point);
+    ctx.fillStyle = "#fff";
+    ctx.strokeStyle = "#263e55";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(x, y - 5);
+    ctx.lineTo(x + 5, y);
+    ctx.lineTo(x, y + 5);
+    ctx.lineTo(x - 5, y);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+  }
   return off;
 }
 
@@ -112,28 +212,35 @@ export function tag(ctx, text, x, y, bg, fg) {
   ctx.save();
   ctx.font = "600 11px ui-monospace, monospace";
   const w = ctx.measureText(text).width + 12;
-  const cw = ctx.canvas.width / (window.devicePixelRatio || 1);
-  if (x + w > cw) x -= w + 18;
+  const cw = ctx.canvas.width / (ctx.getTransform().a || 1);
+  x = Math.max(4, Math.min(x, cw - w - 4));
   if (y < 12) y += 24;
-  ctx.fillStyle = bg; roundRect(ctx, x, y - 11, w, 17, 5); ctx.fill();
-  ctx.fillStyle = fg; ctx.textBaseline = "middle"; ctx.fillText(text, x + 6, y - 2);
+  ctx.fillStyle = bg;
+  roundRect(ctx, x, y - 11, w, 17, 5);
+  ctx.fill();
+  ctx.fillStyle = fg;
+  ctx.textBaseline = "middle";
+  ctx.fillText(text, x + 6, y - 2);
   ctx.restore();
 }
 
 export function roundRect(ctx, x, y, w, h, r) {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
-  ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
-  ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
   ctx.closePath();
 }
 
 export function setupCanvas(canvas) {
   const dpr = window.devicePixelRatio || 1;
   const rect = canvas.getBoundingClientRect();
-  const W = Math.max(320, Math.floor(rect.width));
-  const H = Math.max(380, Math.floor(rect.height || 400));
-  canvas.width = W * dpr; canvas.height = H * dpr;
+  const W = Math.max(1, Math.floor(rect.width));
+  const H = Math.max(1, Math.floor(rect.height || 400));
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
   const ctx = canvas.getContext("2d");
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   return { ctx, W, H };
@@ -142,14 +249,17 @@ export function setupCanvas(canvas) {
 export function rngFrom(seed) {
   let a = seed >>> 0;
   return function () {
-    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    a |= 0;
+    a = (a + 0x6d2b79f5) | 0;
     let t = Math.imul(a ^ (a >>> 15), 1 | a);
     t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
 export function gauss(rand) {
-  let u = 0, v = 0;
-  while (u === 0) u = rand(); while (v === 0) v = rand();
+  let u = 0,
+    v = 0;
+  while (u === 0) u = rand();
+  while (v === 0) v = rand();
   return Math.sqrt(-2 * Math.log(u)) * Math.cos(TWO_PI * v);
 }

@@ -1,34 +1,87 @@
 interface Props {
-  history: number[]
-  sane: number
+  history: number[];
+  sane: number;
 }
-
-// A small line of the best delay found so far, with the sane plan drawn as a
-// dashed reference. The whole point is visible at a glance: at low demand the
-// line barely dips below the dashed line; at high demand it pulls well under.
 export default function ConvergenceSparkline({ history, sane }: Props) {
-  const W = 260
-  const H = 64
-  const pad = 6
-  if (history.length < 2) {
-    return <svg viewBox={`0 0 ${W} ${H}`} className="w-full" />
-  }
-
-  const all = history.concat(sane)
-  const lo = Math.min(...all)
-  const hi = Math.max(...all)
-  const span = hi - lo || 1
-  const x = (i: number) => pad + (i / (history.length - 1)) * (W - 2 * pad)
-  const y = (v: number) => pad + (1 - (v - lo) / span) * (H - 2 * pad)
-
-  const pts = history.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ')
-  const sy = y(sane)
-
+  const W = 420,
+    H = 150,
+    left = 46,
+    right = 18,
+    top = 20,
+    bottom = 30;
+  const values = history.map((v) => (100 * v) / sane);
+  const low = Math.floor(Math.min(99, ...values) - 0.3);
+  const high = 100.4;
+  const x = (i: number) => left + (i / 60) * (W - left - right);
+  const y = (v: number) =>
+    top + ((high - v) / (high - low)) * (H - top - bottom);
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label="optimiser convergence">
-      <line x1={pad} y1={sy} x2={W - pad} y2={sy} stroke="var(--color-muted)" strokeWidth={1} strokeDasharray="4 4" opacity={0.7} />
-      <polyline points={pts} fill="none" stroke="var(--color-accent)" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
-      <circle cx={x(history.length - 1)} cy={y(history[history.length - 1])} r={3} fill="var(--color-accent)" />
+    <svg
+      viewBox={`0 0 ${W} ${H}`}
+      role="img"
+      aria-label={
+        values.length
+          ? `Best delay fell from ${values[0].toFixed(2)} to ${values.at(-1)!.toFixed(2)} percent of baseline over ${values.length - 1} generations.`
+          : "Search progress. The horizontal dashed line marks 100 percent of baseline delay."
+      }
+    >
+      {[low, (low + 100) / 2, 100].map((v) => (
+        <g key={v}>
+          <line
+            x1={left}
+            x2={W - right}
+            y1={y(v)}
+            y2={y(v)}
+            stroke="var(--color-line)"
+            strokeDasharray={v === 100 ? "4 4" : undefined}
+          />
+          <text
+            x={left - 8}
+            y={y(v) + 4}
+            textAnchor="end"
+            fontSize="10"
+            fill="var(--color-muted)"
+          >
+            {v.toFixed(1)}%
+          </text>
+        </g>
+      ))}
+      <polyline
+        points={values.map((v, i) => `${x(i)},${y(v)}`).join(" ")}
+        fill="none"
+        stroke="var(--color-accent)"
+        strokeWidth="2.5"
+        strokeLinejoin="round"
+      />
+      {values.length > 0 && (
+        <circle
+          cx={x(values.length - 1)}
+          cy={y(values.at(-1)!)}
+          r="3"
+          fill="var(--color-accent)"
+        />
+      )}
+      {[0, 20, 40, 60].map((v) => (
+        <text
+          key={v}
+          x={x(v)}
+          y={H - 12}
+          textAnchor="middle"
+          fontSize="10"
+          fill="var(--color-muted)"
+        >
+          {v}
+        </text>
+      ))}
+      <text
+        x={W - right}
+        y="12"
+        textAnchor="end"
+        fontSize="10"
+        fill="var(--color-muted)"
+      >
+        100% = baseline · generation →
+      </text>
     </svg>
-  )
+  );
 }
